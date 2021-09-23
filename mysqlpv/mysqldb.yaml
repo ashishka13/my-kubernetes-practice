@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: karmarkar
+  name: my-app-service
+  labels:
+    app: go-rest-sql
+spec:
+  ports:
+    - port: 1234
+  selector:
+    app: go-rest-sql
+    tier: frontend
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: karmarkar
+  name: my-app-pv-claim
+  labels:
+    app: go-rest-sql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: karmarkar
+  name: my-app-deployment
+  labels:
+    app: go-rest-sql
+spec:
+  selector:
+    matchLabels:
+      app: go-rest-sql
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      namespace: karmarkar
+      labels:
+        app: go-rest-sql
+        tier: frontend
+    spec:
+      containers:
+      - image: nivantdot/restgosql
+        name: restgosql
+        env:
+        - name: DB_PASSWORD
+          value: ashish
+        ports:
+        - containerPort: 1234
+          name: my-rest-port
+        volumeMounts:
+        - name: my-persistent-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: my-persistent-storage
+        persistentVolumeClaim:
+          claimName: my-app-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: karmarkar
+  name: my-db-service
+  labels:
+    app: go-rest-sql
+spec:
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  selector:
+    app: go-rest-sql
+    tier: mysql
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: karmarkar
+  name: my-db-pv-claim
+  labels:
+    app: go-rest-sql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: karmarkar
+  name: my-db-deployment
+  labels:
+    app: go-rest-sql
+spec:
+  selector:
+    matchLabels:
+      app: go-rest-sql
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      namespace: karmarkar
+      labels:
+        app: go-rest-sql
+        tier: mysql
+    spec:
+      containers:
+      - image: mysql:5.6
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: ashish
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: my-db-pv-claim

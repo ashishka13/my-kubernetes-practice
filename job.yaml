@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: myapp-job
+  namespace: karmarkar
+  labels:
+    tier: frontend
+spec:
+  selector:
+    matchLabels:
+      app: job-pod
+  replicas: 2
+  template:
+    metadata:
+      name: nginx-2
+      labels:
+        app: job-pod
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.20.1
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"

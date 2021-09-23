@@ -1,0 +1,21 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mysql-volume
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 4Gi
+  hostPath:
+    path: "/mnt/data"
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    kind: PersistentVolumeClaim
+    namespace: karmarkar
+    name: mysqldb-claim
+    apiVersion: v1
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: mysql-database-class
+  volumeMode: Filesystem

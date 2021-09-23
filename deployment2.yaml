@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logs-deployment
+  namespace: karmarkar
+  labels:
+    tier: backend
+spec:
+  selector:
+    matchLabels:
+      app: loggerapp
+  replicas: 2
+  template:
+    metadata:
+      name: log-generator
+      labels:
+        app: loggerapp
+    spec:
+      containers:
+        - name: event-simulator
+          image: kodecloud/event-simulator
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"

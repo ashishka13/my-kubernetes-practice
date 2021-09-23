@@ -1,0 +1,45 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: mysqldb
+  namespace: karmarkar
+  labels:
+    app: restgosql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restgosql
+  template:
+    metadata:
+      labels:
+        app: restgosql
+    spec:
+      volumes:
+        - name: mysql-persistent-database
+          persistentVolumeClaim:
+            claimName: mysqldb-claim
+      containers:
+        - name: mysql
+          image: 'mysql:5.6'
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-pass
+                key: password
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+          volumeMounts:
+            - name: mysql-persistent-database
+              mountPath: /data
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
