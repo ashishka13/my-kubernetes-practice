@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: first-pod
+  labels:
+    app: App1
+    function: frontend
+spec:
+  containers:
+    - name: web
+      image: nginx:1.20.1
+      resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+      ports:
+        - name: web
+          containerPort: 80
+          protocol: TCP
+      readinessProbe:
+        httpGet:
+          path: http://192.168.49.2:30004/
+          port: 30004
+      envFrom:
+        - secretRef:
+            name: secret-sa-sample
